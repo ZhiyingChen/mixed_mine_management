@@ -215,6 +215,23 @@ class Model:
                     return False
             return True
 
+        # 定义回调函数
+        def callback(x, f, accepted):
+            if callback.iteration == 0:
+                callback.best_f = f
+                callback.no_improvement_count = 0
+            else:
+                if f < callback.best_f:
+                    callback.best_f = f
+                    callback.no_improvement_count = 0
+                else:
+                    callback.no_improvement_count += 1
+                    if callback.no_improvement_count >= 50:
+                        return True  # 返回 True 表示停止迭代
+            callback.iteration += 1
+
+        callback.iteration = 0
+
         result = basinhopping(
             self.get_objective,
             initial_guess,
@@ -224,9 +241,10 @@ class Model:
                 "options": {'disp': True},
                 "tol": 1e-2
             },
-            niter=50,
+            niter=500,
             # 增加迭代次数以提高找到全局最优解的概率
-            accept_test=accept_test
+            accept_test=accept_test,
+            callback=callback
         )
 
         if not result.success:
