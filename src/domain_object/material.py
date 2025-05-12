@@ -19,12 +19,13 @@ class Material:
 
     @property
     def dry_price(self):
-        return self.wet_price * (1 - self.chemical_compound_content.get(enums.ChemicalCompoundName.H2O, 0) / 100)
+        return self.wet_price / (1 - self.chemical_compound_content.get(enums.ChemicalCompoundName.H2O, 0) / 100)
 
     def __str__(self):
-        return "{} {} ({} {})".format(
+        return "{} {} {} ({} {})".format(
             self.material_name,
             self.wet_price,
+            self.dry_price,
             self.ratio_bounds[0],
             self.ratio_bounds[1]
         )

@@ -52,6 +52,8 @@ class InputData:
         material_df = material_df.dropna(
             subset=[mh.material_name]
         )
+        material_df[mh.low_bound] = material_df[mh.low_bound].fillna(0)
+        material_df[mh.up_bound] = material_df[mh.up_bound].fillna(100)
         return material_df
 
     def load_material_dict(self):
