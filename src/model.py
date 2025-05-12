@@ -196,8 +196,7 @@ class Model:
 
     # endregion
     def run_model(self):
-        x_ratio_var = self.generate_initial_x()
-        # self.initial_x = x_ratio_var
+        x_ratio_var = self.initial_x
         initial_x = []
         for key, val in x_ratio_var.items():
             self.keys.append(key)
