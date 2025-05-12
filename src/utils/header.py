@@ -4,7 +4,7 @@ class MaterialHeader:
     wet_price = "湿基价"
     up_bound = "上限"
     low_bound = "下限"
-    ratio = "配比"
+    ratio = "干配"
 
 
 class ChemicalCompoundHeader:
