@@ -205,13 +205,38 @@ class Model:
 
         self.generate_constraints()
 
-        result = minimize(
+        # 定义 accept_test 函数
+        def accept_test(f_new, x_new, f_old, x_old):
+            # 检查新解是否满足所有约束条件
+            for constraint in self.constraints:
+                if constraint['type'] == 'ineq' and constraint['fun'](x_new) < -1e-2:
+                    return False
+                if constraint['type'] == 'eq' and abs(constraint['fun'](x_new)) > 1e-2:
+                    return False
+            return True
+
+        result = basinhopping(
             self.get_objective,
             initial_guess,
-            constraints=self.constraints,
-            method="SLSQP",
-            tol=1e-2,
+            minimizer_kwargs={
+                "constraints": self.constraints,
+                "method": "SLSQP",
+                "options": {'disp': True},
+                "tol": 1e-2
+            },
+            niter=50,
+            # 增加迭代次数以提高找到全局最优解的概率
+            accept_test=accept_test
         )
+
+        if not result.success:
+            logging.error(
+                "Unsuccessful solution, message: {}".format(result.message)
+            )
+        else:
+            logging.info("Successful solution, message: {}".format(result.message))
+            logging.info("Objective: {}".format(result.fun))
+
         self.check_constraints(result_x=result.x)
         logging.info("model solution objective: {}".format(result.fun))
         return result
