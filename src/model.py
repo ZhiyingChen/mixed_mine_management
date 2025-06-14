@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import minimize, basinhopping
 import logging
 import random
+import time
 from .utils import field, enums
 from .input_data import InputData
 from typing import Dict
@@ -29,15 +30,14 @@ class Model:
     def generate_p_material_plan_var(self, x_ratio_var):
         p_material_plan_var = {
             material_name: x_value / (
-                1-
-                self.input_data.material_dict[material_name].chemical_compound_content[enums.ChemicalCompoundName.H2O]
-                / 100
+                    1 -
+                    self.input_data.material_dict[material_name].chemical_compound_content[
+                        enums.ChemicalCompoundName.H2O]
+                    / 100
             )
             for material_name, x_value in x_ratio_var.items()
         }
         return p_material_plan_var
-
-
 
     @staticmethod
     def generate_pr_material_plan_ratio_var(p_material_plan_var):
@@ -45,7 +45,7 @@ class Model:
         pr_material_plan_ratio_var = {
             material_name: p_value * 100 / total_p_material_plan
             for material_name, p_value in p_material_plan_var.items()
-            }
+        }
         return pr_material_plan_ratio_var
 
     def generate_p_chemical_compound_plan_var(self, x_ratio_var, pr_material_plan_ratio_var):
@@ -61,12 +61,13 @@ class Model:
             if chemical_compound_name != enums.ChemicalCompoundName.H2O
         }
         p_chemical_compound_plan_var[enums.ChemicalCompoundName.H2O] = sum(
-                pr_material_plan_ratio_var[material_name] * material.chemical_compound_content[enums.ChemicalCompoundName.H2O]
-                for material_name, material in self.input_data.material_dict.items()
-            ) / sum(
-                pr_material_plan_ratio_var[material_name]
-                for material_name, material in self.input_data.material_dict.items()
-            )
+            pr_material_plan_ratio_var[material_name] * material.chemical_compound_content[
+                enums.ChemicalCompoundName.H2O]
+            for material_name, material in self.input_data.material_dict.items()
+        ) / sum(
+            pr_material_plan_ratio_var[material_name]
+            for material_name, material in self.input_data.material_dict.items()
+        )
         return p_chemical_compound_plan_var
 
     def generate_dry_price_var(self, x_ratio_var):
@@ -83,7 +84,6 @@ class Model:
     def generate_ton_price_var(dry_price_var, p_chemical_compound_plan_var):
         ton_price_var = dry_price_var / p_chemical_compound_plan_var[enums.ChemicalCompoundName.TFe]
         return ton_price_var
-
 
     # endregion
 
@@ -217,8 +217,14 @@ class Model:
             return True
 
         random_results = []
+        start_time = time.time()
+        time_limit = 60  # 例如：60秒
+
         # 定义回调函数
         def callback(x, f, accepted):
+            elapsed_time = time.time() - start_time
+            if elapsed_time > time_limit:
+                return True  # 返回 True 表示停止优化
             if callback.iteration == 0:
                 callback.best_f = f
                 callback.no_improvement_count = 0
@@ -228,9 +234,9 @@ class Model:
                     callback.no_improvement_count = 0
                 else:
                     callback.no_improvement_count += 1
-                    if callback.no_improvement_count >= 50:
+                    if callback.no_improvement_count >= 30:
                         return True  # 返回 True 表示停止迭代
-            if random.random() < 0.1 and len(random_results) < 2:
+            if random.random() < 0.3 and len(random_results) < 2:
                 # 添加新解到结果列表  # 保持列表中2个解
                 random_results.append((x.copy(), f))
 
@@ -247,7 +253,7 @@ class Model:
                 "options": {'disp': True},
                 "tol": 1e-2
             },
-            niter=500,
+            niter=120,
             # 增加迭代次数以提高找到全局最优解的概率
             accept_test=accept_test,
             callback=callback
@@ -277,7 +283,7 @@ class Model:
             constraint_value = constraint_fun(result_x)
 
             if isinstance(constraint_value, list) or isinstance(
-                constraint_value, np.ndarray
+                    constraint_value, np.ndarray
             ):
                 for j, value in enumerate(constraint_value):
                     if constraint_type == "ineq" and value < -tolerance:
@@ -285,7 +291,7 @@ class Model:
                             f"Constraint '{constraint_name}' (inequality) not satisfied: value = {value}"
                         )
                     elif constraint_type == "eq" and not np.isclose(
-                        value, 0, atol=tolerance
+                            value, 0, atol=tolerance
                     ):
                         violations.append(
                             f"Constraint '{constraint_name}' (equality) not satisfied: value = {value}"
@@ -296,7 +302,7 @@ class Model:
                         f"Constraint '{constraint_name}' (inequality) not satisfied: value = {constraint_value}"
                     )
                 elif constraint_type == "eq" and not np.isclose(
-                    constraint_value, 0, atol=tolerance
+                        constraint_value, 0, atol=tolerance
                 ):
                     violations.append(
                         f"Constraint {i + 1} (equality) not satisfied: value = {constraint_value}"
