@@ -230,12 +230,9 @@ class Model:
                     callback.no_improvement_count += 1
                     if callback.no_improvement_count >= 50:
                         return True  # 返回 True 表示停止迭代
-            if random.random() < 0.2:
-                # 添加新解到结果列表
+            if random.random() < 0.1 and len(random_results) < 2:
+                # 添加新解到结果列表  # 保持列表中2个解
                 random_results.append((x.copy(), f))
-                # 保持列表中三个解
-                if len(random_results) > 2:
-                    random_results.pop(0)
 
             callback.iteration += 1
 
