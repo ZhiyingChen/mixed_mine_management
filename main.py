@@ -19,12 +19,14 @@ if __name__ == "__main__":
     initial_x_ratio_sol = initial_run.run_model()
 
     model = Model(input_data=input_data, initial_x=initial_x_ratio_sol)
-    result = model.run_model()
+    result, multi_results = model.run_model()
 
     result_storage = ResultStorage(
         input_data=input_data,
         keys=model.keys,
-        result=result
+        result=result,
+        multi_results=multi_results
     )
     result_storage.write_to_excel()
+    result_storage.write_multi_results_to_excel()
     logging.info("total time: {}s".format(time.time() - st))

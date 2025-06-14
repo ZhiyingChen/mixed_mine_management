@@ -13,4 +13,6 @@ class ChemicalCompoundHeader:
     low_bound = "下限"
 
 
-
+class MultiResultHeader:
+    material_name = "存货"
+    result_ratio = "结果配比"

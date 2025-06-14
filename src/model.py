@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize, basinhopping
 import logging
+import random
 from .utils import field, enums
 from .input_data import InputData
 from typing import Dict
@@ -215,6 +216,7 @@ class Model:
                     return False
             return True
 
+        random_results = []
         # 定义回调函数
         def callback(x, f, accepted):
             if callback.iteration == 0:
@@ -228,6 +230,13 @@ class Model:
                     callback.no_improvement_count += 1
                     if callback.no_improvement_count >= 50:
                         return True  # 返回 True 表示停止迭代
+            if random.random() < 0.2:
+                # 添加新解到结果列表
+                random_results.append((x.copy(), f))
+                # 保持列表中三个解
+                if len(random_results) > 2:
+                    random_results.pop(0)
+
             callback.iteration += 1
 
         callback.iteration = 0
@@ -257,7 +266,8 @@ class Model:
 
         self.check_constraints(result_x=result.x)
         logging.info("model solution objective: {}".format(result.fun))
-        return result
+        multi_results = [(result.x.copy(), result.fun)] + random_results
+        return result, multi_results
 
     def check_constraints(self, result_x, tolerance=0.001):
         constraints = self.constraints
