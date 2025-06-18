@@ -28,5 +28,4 @@ if __name__ == "__main__":
         multi_results=multi_results
     )
     result_storage.write_to_excel()
-    result_storage.write_multi_results_to_excel()
     logging.info("total time: {}s".format(time.time() - st))

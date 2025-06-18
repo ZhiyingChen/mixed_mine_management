@@ -218,7 +218,7 @@ class Model:
 
         random_results = []
         start_time = time.time()
-        time_limit = 60  # 例如：60秒
+        time_limit = 25
 
         # 定义回调函数
         def callback(x, f, accepted):
