@@ -13,9 +13,26 @@ class InputData:
             exe_folder: str
     ):
         self.exe_folder = exe_folder
+        self.time_limit = 30
         # 基本信息
         self.material_dict: Dict[str, do.Material] = dict()
         self.chemical_compound_dict: Dict[str, do.ChemicalCompound] = dict()
+
+    def read_time_param_df(self):
+        time_param_df = pd.read_excel(
+            '{}{}'.format(self.exe_folder, fd.ROCK_FILENAME)
+            , sheet_name=fd.TIME_PARAM_SHEET
+        )
+        return time_param_df
+
+    def load_time_param(self):
+        tph = header.TimeParamHeader
+
+        time_param_df = self.read_time_param_df()
+        for _, row in time_param_df.iterrows():
+            if row[tph.param_name] == tph.time_limit:
+                self.time_limit = row[tph.param_value]
+                logging.info('time limit reset to {}'.format(self.time_limit))
 
     def read_chemical_compound_df(self):
         cch = header.ChemicalCompoundHeader
@@ -77,5 +94,6 @@ class InputData:
         logging.info("{}".format(len(material_dict)))
 
     def read_data(self):
+        self.load_time_param()
         self.load_chemical_compound_dict()
         self.load_material_dict()

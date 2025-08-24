@@ -218,12 +218,11 @@ class Model:
 
         random_results = []
         start_time = time.time()
-        time_limit = 25
 
         # 定义回调函数
         def callback(x, f, accepted):
             elapsed_time = time.time() - start_time
-            if elapsed_time > time_limit:
+            if elapsed_time > self.input_data.time_limit:
                 return True  # 返回 True 表示停止优化
             if callback.iteration == 0:
                 callback.best_f = f
@@ -253,7 +252,7 @@ class Model:
                 "options": {'disp': True},
                 "tol": 1e-2
             },
-            niter=120,
+            niter=1,
             # 增加迭代次数以提高找到全局最优解的概率
             accept_test=accept_test,
             callback=callback

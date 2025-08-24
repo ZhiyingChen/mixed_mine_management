@@ -13,6 +13,12 @@ class ChemicalCompoundHeader:
     low_bound = "下限"
 
 
+class TimeParamHeader:
+    param_name = '参数名称'
+    param_value = '参数值'
+    time_limit = '运行时间限制 (s)'
+
+
 class MultiResultHeader:
     material_name = "存货"
     result_ratio = "结果配比"
